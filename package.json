@@ -1,0 +1,19 @@
+{
+  "name": "galacticon",
+  "version": "1.0.0",
+  "description": "A space strategy game built with TypeScript.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --respawn src/index.ts"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}
