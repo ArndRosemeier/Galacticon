@@ -13,6 +13,7 @@ import { LifeSupport } from './techs/LifeSupport';
 import { Terraforming } from './techs/Terraforming';
 import { Espionage } from './techs/Espionage';
 import { Tech } from './Tech';
+import { Game } from './Game';
 
 /**
  * Represents a player in Galacticon.
@@ -22,6 +23,10 @@ export class Player {
   public money: number;
   /** Array of known quadrants as {x, y} grid coordinates */
   public knownQuadrants: { x: number, y: number }[];
+  /** Indicates if this player is controlled by AI */
+  public isAI: boolean;
+  /** The player's name */
+  public name: string;
 
   // --- Technology instances ---
   public propulsion: Propulsion;
@@ -43,9 +48,13 @@ export class Player {
   /**
    * Create a new player.
    * @param money Initial money (default: 0)
+   * @param isAI Whether this player is an AI (default: false)
+   * @param name The player's name (default: '')
    */
-  constructor(money: number = 0) {
+  constructor(money: number = 0, isAI: boolean = false, name: string = '') {
     this.money = money;
+    this.isAI = isAI;
+    this.name = name;
     this.knownQuadrants = [];
     this.propulsion = new Propulsion();
     this.armor = new Armor();
@@ -77,5 +86,12 @@ export class Player {
       this.terraforming,
       this.espionage
     ];
+  }
+
+  /**
+   * Called when this player's turn starts. (No-op for now)
+   */
+  public startTurn() {
+    // Player turn start logic will go here
   }
 } 

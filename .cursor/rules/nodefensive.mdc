@@ -1,0 +1,7 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Do not use defensive programming of any kind. No silent errors and avoid all purpose variable types. Programm for easy debuggability, errors need to be visible and loud.
+y

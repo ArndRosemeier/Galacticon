@@ -1,6 +1,7 @@
 import { Star, SpectralClass } from './Star';
 import { Planet, PlanetType } from './Planet';
 import { StarSystem } from './StarSystem';
+import { Universe } from './Universe';
 
 /**
  * Factory for generating realistic star systems using real-life probabilities.
@@ -39,9 +40,10 @@ export class StarSystemFactory {
 
   /**
    * Create a random star system.
+   * @param universe The parent universe (required, used for naming)
    * @param parentQuadrant (optional) The parent quadrant for the new star system
    */
-  public static createRandomSystem(parentQuadrant?: import('./Quadrant').Quadrant): StarSystem {
+  public static createRandomSystem(universe: Universe, parentQuadrant?: import('./Quadrant').Quadrant): StarSystem {
     // Pick spectral class
     const spectralClass = this.weightedRandom(this.spectralClassProbabilities);
     // Assign mass based on spectral class (approximate solar masses)
@@ -80,7 +82,9 @@ export class StarSystemFactory {
       planets.push(new Planet(type, radius, mass, rotationPeriod));
     }
     // Create the star system, which will set parentSystem and parentQuadrant
-    return new StarSystem(star, planets, parentQuadrant);
+    const system = new StarSystem(star, planets, parentQuadrant);
+    universe.assertSystemName(system);
+    return system;
   }
 
   /**

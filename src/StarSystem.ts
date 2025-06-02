@@ -11,6 +11,8 @@ export class StarSystem {
   public planets: Planet[];
   /** The parent quadrant of this star system */
   public parentQuadrant?: import('./Quadrant').Quadrant;
+  /** The name of this star system (may be empty until generated) */
+  public name: string = '';
 
   /**
    * Create a new StarSystem.

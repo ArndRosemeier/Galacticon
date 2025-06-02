@@ -2,6 +2,11 @@ import './style.css'
 import { UniverseRenderTest } from './UniverseRenderTest';
 import typescriptLogo from './typescript.svg'
 import viteLogo from '/vite.svg'
+import { Game } from './Game';
+import { showNewGameDialog } from './NewGameDialog';
+import { createSidebar } from './Sidebar';
+
+export let currentGame: Game | null = null;
 
 // Remove default Vite content
 const app = document.querySelector<HTMLDivElement>('#app');
@@ -46,10 +51,28 @@ if (app) {
     viewPanel.style.background = '#000';
     viewPanel.style.borderRadius = `${innerPanelRadius}px`;
     viewPanel.style.overflow = 'hidden';
-    // Create universe render UI
-    const universeUI = UniverseRenderTest.create(Math.floor(viewPanelWidth), Math.floor(innerPanelHeight));
-    viewPanel.appendChild(universeUI);
-    container.appendChild(viewPanel);
+    viewPanel.style.boxShadow = '0 0 48px #00fff799, 0 0 8px #0ff';
+
+    // Show Title.png at start
+    const titleImg = document.createElement('img');
+    titleImg.src = '/Title.png';
+    titleImg.style.position = 'absolute';
+    titleImg.style.left = '0';
+    titleImg.style.top = '0';
+    titleImg.style.width = '100%';
+    titleImg.style.height = '100%';
+    titleImg.style.objectFit = 'cover';
+    titleImg.style.borderRadius = `${innerPanelRadius}px`;
+    viewPanel.appendChild(titleImg);
+
+    // Placeholder for universe UI
+    let universeUI: HTMLDivElement | null = null;
+    function renderUniverse(game: Game) {
+      if (universeUI) universeUI.remove();
+      if (titleImg.parentElement) titleImg.parentElement.removeChild(titleImg);
+      universeUI = UniverseRenderTest.create(Math.floor(viewPanelWidth), Math.floor(innerPanelHeight));
+      viewPanel.appendChild(universeUI);
+    }
     // Create UI panel
     const uiPanel = document.createElement('div');
     uiPanel.style.position = 'absolute';
@@ -59,8 +82,53 @@ if (app) {
     uiPanel.style.height = `${innerPanelHeight}px`;
     uiPanel.style.background = '#0a1020';
     uiPanel.style.borderRadius = `${innerPanelRadius}px`;
+    uiPanel.style.boxShadow = '0 0 48px #00fff799, 0 0 8px #0ff';
+    // New Game button
+    const newGameBtn = document.createElement('button');
+    newGameBtn.textContent = 'New Game';
+    newGameBtn.style.position = 'absolute';
+    newGameBtn.style.top = '16px';
+    newGameBtn.style.right = '24px';
+    newGameBtn.style.background = 'linear-gradient(90deg, #00fff7 0%, #0f3460 100%)';
+    newGameBtn.style.color = '#181818';
+    newGameBtn.style.fontWeight = 'bold';
+    newGameBtn.style.border = 'none';
+    newGameBtn.style.borderRadius = '8px';
+    newGameBtn.style.padding = '10px 24px';
+    newGameBtn.style.fontSize = '1.1em';
+    newGameBtn.style.cursor = 'pointer';
+    newGameBtn.style.boxShadow = '0 0 8px #00fff7aa';
+    // Sidebar (game info)
+    let currentSidebar: HTMLDivElement | null = null;
+    function redrawSidebar() {
+      if (currentSidebar) currentSidebar.remove();
+      currentSidebar = createSidebar();
+      uiPanel.appendChild(currentSidebar);
+    }
+    redrawSidebar();
+    uiPanel.appendChild(newGameBtn);
+    newGameBtn.onclick = () => {
+      showNewGameDialog((game) => {
+        currentGame = game;
+        renderUniverse(game);
+        redrawSidebar();
+        game.start();
+        game.onChange(() => {
+          redrawSidebar();
+        });
+        // Debug: log player names
+        console.log('Players in new game:', game.players.map(p => p.name));
+      });
+    };
+    // Remove the initial call to UniverseRenderTest and the creation of a temporary universe.
+    // The view area will remain blank until a new game is started.
+    // (No call to renderUniverse or UniverseRenderTest here)
+    container.appendChild(viewPanel);
     container.appendChild(uiPanel);
   }
   window.addEventListener('resize', resizePanels);
   resizePanels();
 }
+
+// Example usage: show the dialog and start the game
+// Only show the dialog when the New Game button is clicked

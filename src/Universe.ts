@@ -1,6 +1,8 @@
 import { Quadrant } from './Quadrant';
 import { QuadrantFactory } from './QuadrantFactory';
 import { fractalValueNoise2D } from './Planet';
+import { NameGenerator } from './NameGenerator';
+import { StarSystem } from './StarSystem';
 
 /**
  * Represents the entire universe as an endless grid of quadrants.
@@ -11,6 +13,8 @@ export class Universe {
   private quadrants: Map<string, Quadrant> = new Map();
   /** Pre-rendered fog texture (400x400) */
   private fogTexture: HTMLCanvasElement;
+  /** Map from star system names to StarSystem instances */
+  private systemNameMap: Map<string, StarSystem> = new Map();
 
   constructor() {
     // Generate fog texture once
@@ -66,7 +70,7 @@ export class Universe {
     const key = `${x},${y}`;
     let quad = this.quadrants.get(key);
     if (!quad) {
-      quad = QuadrantFactory.createRandomQuadrant();
+      quad = QuadrantFactory.createRandomQuadrant(this);
       this.quadrants.set(key, quad);
     }
     return quad;
@@ -132,5 +136,20 @@ export class Universe {
         }
       }
     }
+  }
+
+  /**
+   * Ensures the given star system has a unique name. If not, generates one and stores it in the map.
+   */
+  public assertSystemName(starSystem: StarSystem): void {
+    if (starSystem.name && this.systemNameMap.get(starSystem.name) === starSystem) {
+      return;
+    }
+    let name = '';
+    do {
+      name = NameGenerator.createStarName();
+    } while (this.systemNameMap.has(name));
+    starSystem.name = name;
+    this.systemNameMap.set(name, starSystem);
   }
 } 

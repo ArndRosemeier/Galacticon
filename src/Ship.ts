@@ -2,9 +2,9 @@ import { Propulsion } from './equipment/Propulsion';
 import { Armor } from './equipment/Armor';
 import { EnergyShield } from './equipment/EnergyShield';
 import { PointDefense } from './equipment/PointDefense';
-import { EnergyWeapon } from './equipment/EnergyWeapon';
-import { Rocket } from './equipment/Rocket';
-import { ProjectileWeapon } from './equipment/ProjectileWeapon';
+import { EnergyWeapons } from './equipment/EnergyWeapons';
+import { Missiles } from './equipment/Missiles';
+import { ProjectileWeapons } from './equipment/ProjectileWeapons';
 import { Sensors } from './equipment/Sensors';
 import { EnergySystems } from './equipment/EnergySystems';
 import { Stealth } from './equipment/Stealth';
@@ -15,9 +15,9 @@ export class Ship {
   armor: Armor;
   energyShield: EnergyShield;
   pointDefense: PointDefense;
-  energyWeapon: EnergyWeapon;
-  rocket: Rocket;
-  projectileWeapon: ProjectileWeapon;
+  energyWeapons: EnergyWeapons;
+  missiles: Missiles;
+  projectileWeapons: ProjectileWeapons;
   sensors: Sensors;
   energySystems: EnergySystems;
   stealth: Stealth;
@@ -29,15 +29,17 @@ export class Ship {
 
   BaseStrength: number = 100;
 
+  Image: HTMLCanvasElement | null = null;
+
   constructor(player: Player) {
     this.player = player;
     this.propulsion = new Propulsion();
     this.armor = new Armor();
     this.energyShield = new EnergyShield();
     this.pointDefense = new PointDefense();
-    this.energyWeapon = new EnergyWeapon();
-    this.rocket = new Rocket();
-    this.projectileWeapon = new ProjectileWeapon();
+    this.energyWeapons = new EnergyWeapons();
+    this.missiles = new Missiles();
+    this.projectileWeapons = new ProjectileWeapons();
     this.sensors = new Sensors();
     this.energySystems = new EnergySystems();
     this.stealth = new Stealth();
@@ -46,9 +48,9 @@ export class Ship {
       this.armor,
       this.energyShield,
       this.pointDefense,
-      this.energyWeapon,
-      this.rocket,
-      this.projectileWeapon,
+      this.energyWeapons,
+      this.missiles,
+      this.projectileWeapons,
       this.sensors,
       this.energySystems,
       this.stealth
@@ -61,9 +63,9 @@ export class Ship {
     this.armor.Efficiency = player.armor.getEfficiency();
     this.energyShield.Efficiency = player.energyShields.getEfficiency();
     this.pointDefense.Efficiency = player.pointDefense.getEfficiency();
-    this.energyWeapon.Efficiency = player.energyWeapons.getEfficiency();
-    this.rocket.Efficiency = player.rocketWeapons.getEfficiency();
-    this.projectileWeapon.Efficiency = player.projectileWeapons.getEfficiency();
+    this.energyWeapons.Efficiency = player.energyWeapons.getEfficiency();
+    this.missiles.Efficiency = player.rocketWeapons.getEfficiency();
+    this.projectileWeapons.Efficiency = player.projectileWeapons.getEfficiency();
     this.sensors.Efficiency = player.sensors.getEfficiency();
     this.energySystems.Efficiency = player.energySystems.getEfficiency();
     // Stealth does not have a direct tech, so leave Efficiency as default or set as needed

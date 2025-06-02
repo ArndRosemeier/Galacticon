@@ -57,8 +57,6 @@ export class ImageCollection {
       }
     }
 
-    console.log(`[ImageCollection] Found ${regions.length} regions in compound image.`);
-
     // For each region, extract as a new canvas
     let added = 0;
     for (const region of regions) {
@@ -81,6 +79,5 @@ export class ImageCollection {
       this.canvases.push(newCanvas);
       added++;
     }
-    console.log(`[ImageCollection] Added ${added} canvases to collection.`);
   }
 } 

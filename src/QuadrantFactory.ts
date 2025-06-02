@@ -7,8 +7,9 @@ import { StarSystemFactory } from './StarSystemFactory';
 export class QuadrantFactory {
   /**
    * Create a random quadrant with 5-20 star systems, each at least 2 LY apart and at least 1 LY from the edge.
+   * @param parentUniverse The parent universe to set on the quadrant (required)
    */
-  public static createRandomQuadrant(): Quadrant {
+  public static createRandomQuadrant(parentUniverse: import('./Universe').Universe): Quadrant {
     const minSystems = 5;
     const maxSystems = 20;
     const nSystems = minSystems + Math.floor(Math.random() * (maxSystems - minSystems + 1));
@@ -34,11 +35,11 @@ export class QuadrantFactory {
       }
       if (tooClose) continue;
       // Create the star system and location
-      const system = StarSystemFactory.createRandomSystem();
+      const system = StarSystemFactory.createRandomSystem(parentUniverse);
       locations.push({ system, x, y });
     }
     // Create the quadrant and set parent references
-    const quadrant = new Quadrant(locations);
+    const quadrant = new Quadrant(locations, parentUniverse);
     return quadrant;
   }
 } 

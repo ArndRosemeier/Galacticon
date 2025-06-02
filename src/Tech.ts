@@ -26,13 +26,12 @@ export abstract class Tech {
 
   /**
    * Invest research points into this technology.
-   * @param points Number of research points to invest
+   * Now always invests 1 point per call.
    */
-  public invest(points: number) {
-    if (points <= 0) throw new Error('Research points invested must be positive.');
-    this.researchPoints += points;
+  public invest() {
+    this.researchPoints += 100;
     // Loudly log investment
-    console.log(`[Tech] ${this.Name} invested ${points} research points. Total: ${this.researchPoints}`);
+    console.log(`[Tech] ${this.Name} invested 1 research point. Total: ${this.researchPoints}`);
   }
 
   /**
