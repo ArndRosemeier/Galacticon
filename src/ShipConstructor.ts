@@ -255,6 +255,98 @@ export class ShipConstructor {
       });
       dialog.appendChild(slidersSection);
 
+      // --- Add Size, Troops, Colonists sliders row ---
+      const stcRow = document.createElement('div');
+      stcRow.style.display = 'flex';
+      stcRow.style.alignItems = 'center';
+      stcRow.style.gap = '1vw';
+      stcRow.style.width = '100%';
+      stcRow.style.height = '4vh';
+      stcRow.style.fontSize = '2vh';
+      stcRow.style.margin = '1vh 0 2vh 0';
+      stcRow.style.justifyContent = 'space-between';
+
+      // Helper for label+slider+value
+      function makeSlider(labelText: string, min: number, max: number, value: number, onInput: (v: number) => void) {
+        const group = document.createElement('div');
+        group.style.display = 'flex';
+        group.style.alignItems = 'center';
+        group.style.gap = '0.4vw';
+        group.style.minWidth = '8vw';
+        group.style.flex = '1 1 0';
+        const label = document.createElement('span');
+        label.textContent = labelText;
+        label.style.fontWeight = 'bold';
+        label.style.textShadow = '0 0 0.8vw #00fff7';
+        label.style.fontSize = '2vh';
+        group.appendChild(label);
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = min.toString();
+        slider.max = max.toString();
+        slider.value = value.toString();
+        slider.step = '1';
+        slider.style.flex = '1';
+        slider.style.height = '1.75vh';
+        slider.style.accentColor = '#00fff7';
+        slider.style.background = 'rgba(0,255,255,0.1)';
+        slider.style.boxShadow = '0 0 0.8vw #00fff7';
+        slider.style.margin = '0 1vw';
+        group.appendChild(slider);
+        const valueLabel = document.createElement('span');
+        valueLabel.textContent = value.toString();
+        valueLabel.style.width = '4vw';
+        valueLabel.style.fontSize = '2vh';
+        valueLabel.style.textAlign = 'right';
+        valueLabel.style.textShadow = '0 0 0.8vw #00fff7';
+        group.appendChild(valueLabel);
+        slider.oninput = () => {
+          const v = Math.round(Number(slider.value));
+          valueLabel.textContent = v.toString();
+          onInput(v);
+        };
+        return { group, slider, valueLabel };
+      }
+
+      // Initial values
+      let stcSize = Math.max(2, Math.min(100, ship.Size || 2));
+      let stcTroops = Math.max(0, Math.min((stcSize-1)*10, ship.Troops || 0));
+      let stcColonists = Math.max(0, Math.min((stcSize-1)*10, ship.Colonists || 0));
+
+      const sizeSlider = makeSlider('Size', 2, 100, stcSize, v => {
+        stcSize = v;
+        ship.Size = v;
+        // Clamp troops and colonists
+        const maxTC = (stcSize-1)*10;
+        if (stcTroops > maxTC) {
+          stcTroops = maxTC;
+          troopsSlider.slider.value = stcTroops.toString();
+          troopsSlider.valueLabel.textContent = stcTroops.toString();
+          ship.Troops = stcTroops;
+        }
+        if (stcColonists > maxTC) {
+          stcColonists = maxTC;
+          colonistsSlider.slider.value = stcColonists.toString();
+          colonistsSlider.valueLabel.textContent = stcColonists.toString();
+          ship.Colonists = stcColonists;
+        }
+        troopsSlider.slider.max = maxTC.toString();
+        colonistsSlider.slider.max = maxTC.toString();
+      });
+      const troopsSlider = makeSlider('Troops', 0, (stcSize-1)*10, stcTroops, v => {
+        stcTroops = v;
+        ship.Troops = v;
+      });
+      const colonistsSlider = makeSlider('Colonists', 0, (stcSize-1)*10, stcColonists, v => {
+        stcColonists = v;
+        ship.Colonists = v;
+      });
+
+      stcRow.appendChild(sizeSlider.group);
+      stcRow.appendChild(troopsSlider.group);
+      stcRow.appendChild(colonistsSlider.group);
+      dialog.appendChild(stcRow);
+
       // Set up slider event handlers after all rows are created
       sliders.forEach((slider, idx) => {
         slider.oninput = () => {

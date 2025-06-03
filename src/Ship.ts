@@ -31,6 +31,11 @@ export class Ship {
 
   Image: HTMLCanvasElement | null = null;
 
+  Size: number = 50; // Range 1 to 100
+
+  Colonists: number = 0;
+  Troops: number = 0;
+
   constructor(player: Player) {
     this.player = player;
     this.propulsion = new Propulsion();
