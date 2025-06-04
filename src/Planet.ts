@@ -107,6 +107,12 @@ export class Planet {
   public rotationPeriod: number;
   /** The parent star system of this planet */
   public parentSystem?: import('./StarSystem').StarSystem;
+  /** The owner of the planet (player) */
+  public owner: import('./Player').Player | null;
+  /** Habitability score (0-100 or similar) */
+  public habitability: number;
+  /** Minerals score (0-100 or similar) */
+  public minerals: number;
 
   /**
    * Create a new Planet.
@@ -122,6 +128,9 @@ export class Planet {
     this.mass = mass;
     this.rotationPeriod = rotationPeriod;
     this.parentSystem = parentSystem;
+    this.owner = null;
+    this.habitability = 0;
+    this.minerals = 0;
   }
 
   /**

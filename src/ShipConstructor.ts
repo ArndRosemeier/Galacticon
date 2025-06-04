@@ -129,13 +129,15 @@ export class ShipConstructor {
               ) {
                 if (specRows[unfoldedSpecIdx]) {
                   specRows[unfoldedSpecIdx].style.display = 'none';
+                  if (specRows[unfoldedSpecIdx].parentElement) {
+                    specRows[unfoldedSpecIdx].parentElement.removeChild(specRows[unfoldedSpecIdx]);
+                  }
                 }
-                specRows[unfoldedSpecIdx].parentElement.removeChild(specRows[unfoldedSpecIdx]);
-              }
-              if (specCascade) {
-                specCascade.style.display = 'flex';
-                row.insertAdjacentElement('afterend', specCascade);
-                unfoldedSpecIdx = eqIdx;
+                if (specCascade) {
+                  specCascade.style.display = 'flex';
+                  row.insertAdjacentElement('afterend', specCascade);
+                  unfoldedSpecIdx = eqIdx;
+                }
               }
             }
           };
@@ -245,7 +247,9 @@ export class ShipConstructor {
               }
             };
 
-            specCascade.appendChild(specRow);
+            if (specCascade) {
+              specCascade.appendChild(specRow);
+            }
           });
           specCascade.style.display = 'none'; // Hidden by default
           specRows[eqIdx] = specCascade;
@@ -330,16 +334,39 @@ export class ShipConstructor {
           colonistsSlider.valueLabel.textContent = stcColonists.toString();
           ship.Colonists = stcColonists;
         }
+        // Clamp sum
+        if (stcTroops + stcColonists > maxTC) {
+          stcColonists = Math.max(0, maxTC - stcTroops);
+          colonistsSlider.slider.value = stcColonists.toString();
+          colonistsSlider.valueLabel.textContent = stcColonists.toString();
+          ship.Colonists = stcColonists;
+        }
         troopsSlider.slider.max = maxTC.toString();
         colonistsSlider.slider.max = maxTC.toString();
       });
       const troopsSlider = makeSlider('Troops', 0, (stcSize-1)*10, stcTroops, v => {
+        const maxTC = (stcSize-1)*10;
         stcTroops = v;
-        ship.Troops = v;
+        // Clamp colonists so sum does not exceed maxTC
+        if (stcTroops + stcColonists > maxTC) {
+          stcColonists = Math.max(0, maxTC - stcTroops);
+          colonistsSlider.slider.value = stcColonists.toString();
+          colonistsSlider.valueLabel.textContent = stcColonists.toString();
+        }
+        ship.Troops = stcTroops;
+        ship.Colonists = stcColonists;
       });
       const colonistsSlider = makeSlider('Colonists', 0, (stcSize-1)*10, stcColonists, v => {
+        const maxTC = (stcSize-1)*10;
         stcColonists = v;
-        ship.Colonists = v;
+        // Clamp troops so sum does not exceed maxTC
+        if (stcTroops + stcColonists > maxTC) {
+          stcTroops = Math.max(0, maxTC - stcColonists);
+          troopsSlider.slider.value = stcTroops.toString();
+          troopsSlider.valueLabel.textContent = stcTroops.toString();
+        }
+        ship.Troops = stcTroops;
+        ship.Colonists = stcColonists;
       });
 
       stcRow.appendChild(sizeSlider.group);

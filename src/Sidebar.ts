@@ -29,6 +29,35 @@ export function createSidebar(): HTMLDivElement {
   }
   updateInfo();
   sidebar.appendChild(info);
+  // Show current player's race (if any)
+  if (currentGame && currentGame.players.length > 0 && currentGame.activePlayer >= 0 && currentGame.activePlayer < currentGame.players.length) {
+    const player = currentGame.players[currentGame.activePlayer];
+    if (player.race) {
+      const raceRow = document.createElement('div');
+      raceRow.style.display = 'flex';
+      raceRow.style.alignItems = 'center';
+      raceRow.style.margin = '12px 0 0 0';
+      raceRow.style.position = 'absolute';
+      raceRow.style.top = '48px';
+      raceRow.style.left = '24px';
+      raceRow.style.zIndex = '2';
+      const img = document.createElement('img');
+      img.src = player.race.image;
+      img.style.width = '2.2em';
+      img.style.height = '2.2em';
+      img.style.objectFit = 'cover';
+      img.style.borderRadius = '0.5em';
+      img.style.marginRight = '0.7em';
+      raceRow.appendChild(img);
+      const name = document.createElement('span');
+      name.textContent = player.race.name;
+      name.style.color = '#00fff7';
+      name.style.fontWeight = 'bold';
+      name.style.fontSize = '1.1em';
+      raceRow.appendChild(name);
+      sidebar.appendChild(raceRow);
+    }
+  }
   // Player list
   if (currentGame && currentGame.players.length > 0 && currentGame.activePlayer >= 0 && currentGame.activePlayer < currentGame.players.length) {
     const list = document.createElement('ul');
@@ -48,7 +77,11 @@ export function createSidebar(): HTMLDivElement {
       icon.textContent = player.isAI ? '🤖' : '👤';
       icon.style.marginRight = '10px';
       li.appendChild(icon);
-      li.appendChild(document.createTextNode(player.name || `Player ${idx + 1}`));
+      let label = player.name || `Player ${idx + 1}`;
+      if (player.race && player.race.name) {
+        label += ` (${player.race.name})`;
+      }
+      li.appendChild(document.createTextNode(label));
       li.style.fontSize = '1.1em';
       li.style.marginBottom = '10px';
       li.style.padding = '8px 18px';
@@ -89,6 +122,31 @@ export function createSidebar(): HTMLDivElement {
     }
   };
   sidebar.appendChild(constructBtn);
+  // Add Choose Race button for testing
+  const chooseRaceBtn = document.createElement('button');
+  chooseRaceBtn.textContent = 'Choose Race (Test)';
+  chooseRaceBtn.style.position = 'absolute';
+  chooseRaceBtn.style.bottom = '80px';
+  chooseRaceBtn.style.left = '24px';
+  chooseRaceBtn.style.background = 'linear-gradient(90deg, #0af 0%, #00fff7 100%)';
+  chooseRaceBtn.style.color = '#181818';
+  chooseRaceBtn.style.fontWeight = 'bold';
+  chooseRaceBtn.style.border = 'none';
+  chooseRaceBtn.style.borderRadius = '8px';
+  chooseRaceBtn.style.padding = '10px 24px';
+  chooseRaceBtn.style.fontSize = '1.1em';
+  chooseRaceBtn.style.cursor = 'pointer';
+  chooseRaceBtn.style.boxShadow = '0 0 8px #00fff7aa';
+  chooseRaceBtn.onclick = async () => {
+    if (!currentGame || !currentGame.races) {
+      alert('No game or races available. Start a game first.');
+      return;
+    }
+    const { ChooseRaceDialog } = await import('./ChooseRaceDialog');
+    const selected = await ChooseRaceDialog.show(currentGame.races);
+    console.log('Selected race:', selected);
+  };
+  sidebar.appendChild(chooseRaceBtn);
   // Optionally, expose a way to update info externally
   (sidebar as any).updateInfo = updateInfo;
   return sidebar;

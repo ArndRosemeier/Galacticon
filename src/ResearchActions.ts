@@ -4,7 +4,7 @@ import { Player } from './Player';
 import { Armor } from './techs/Armor';
 import { Espionage } from './techs/Espionage';
 import { Terraforming } from './techs/Terraforming';
-import { LifeSupport } from './techs/LifeSupport';
+import { PopulationGrowth } from './techs/PopulationGrowth';
 import { EnergySystems } from './techs/EnergySystems';
 import { Automation } from './techs/Automation';
 import { Sensors } from './techs/Sensors';
@@ -34,10 +34,10 @@ export class ResearchTerraformingAction extends Action {
   Act(game: Game, activePlayer: Player) { activePlayer.terraforming.invest(); }
 }
 
-export class ResearchLifeSupportAction extends Action {
-  get Name() { return 'Research Life Support'; }
-  get Description() { return 'Increase efficiency of Life Support'; }
-  Act(game: Game, activePlayer: Player) { activePlayer.lifeSupport.invest(); }
+export class ResearchPopulationGrowthAction extends Action {
+  get Name() { return 'Research Population Growth'; }
+  get Description() { return 'Increase efficiency of Population Growth'; }
+  Act(game: Game, activePlayer: Player) { activePlayer.populationGrowth.invest(); }
 }
 
 export class ResearchEnergySystemsAction extends Action {

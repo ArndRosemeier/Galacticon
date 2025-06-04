@@ -9,7 +9,7 @@ import { Construction } from './techs/Construction';
 import { Sensors } from './techs/Sensors';
 import { Automation } from './techs/Automation';
 import { EnergySystems } from './techs/EnergySystems';
-import { LifeSupport } from './techs/LifeSupport';
+import { PopulationGrowth } from './techs/PopulationGrowth';
 import { Terraforming } from './techs/Terraforming';
 import { Espionage } from './techs/Espionage';
 import { Tech } from './Tech';
@@ -27,6 +27,8 @@ export class Player {
   public isAI: boolean;
   /** The player's name */
   public name: string;
+  /** The player's chosen race */
+  public race: import('./Race').Race | null;
 
   // --- Technology instances ---
   public propulsion: Propulsion;
@@ -40,7 +42,7 @@ export class Player {
   public sensors: Sensors;
   public automation: Automation;
   public energySystems: EnergySystems;
-  public lifeSupport: LifeSupport;
+  public populationGrowth: PopulationGrowth;
   public terraforming: Terraforming;
   public espionage: Espionage;
   public allTechs: Tech[];
@@ -67,7 +69,7 @@ export class Player {
     this.sensors = new Sensors();
     this.automation = new Automation();
     this.energySystems = new EnergySystems();
-    this.lifeSupport = new LifeSupport();
+    this.populationGrowth = new PopulationGrowth();
     this.terraforming = new Terraforming();
     this.espionage = new Espionage();
     this.allTechs = [
@@ -82,10 +84,11 @@ export class Player {
       this.sensors,
       this.automation,
       this.energySystems,
-      this.lifeSupport,
+      this.populationGrowth,
       this.terraforming,
       this.espionage
     ];
+    this.race = null;
   }
 
   /**

@@ -186,7 +186,7 @@ export class ChooseRaceDialog {
       cancelBtn.style.boxShadow = '0 0 0.8vw #00fff7aa';
       Object.assign(cancelBtn.style, buttonStyle);
       const okBtn = document.createElement('button');
-      okBtn.textContent = 'Choose Race';
+      okBtn.textContent = 'OK';
       okBtn.style.background = 'linear-gradient(90deg, #00fff7 0%, #0af 100%)';
       okBtn.style.color = '#181818';
       okBtn.style.fontWeight = 'bold';
@@ -209,8 +209,35 @@ export class ChooseRaceDialog {
       dialog.appendChild(contentCol);
       overlay.appendChild(dialog);
       document.body.appendChild(overlay);
-      // Show first race image by default
-      if (races.length > 0) showImage(races[0]);
+      // Show blank view area with 'Choose race' text at startup
+      mainArea.innerHTML = '';
+      const chooseText = document.createElement('div');
+      chooseText.textContent = 'Choose race';
+      chooseText.style.color = '#fff';
+      chooseText.style.fontSize = '2.5vh';
+      chooseText.style.fontWeight = 'bold';
+      chooseText.style.textAlign = 'center';
+      chooseText.style.width = '100%';
+      chooseText.style.height = '100%';
+      chooseText.style.display = 'flex';
+      chooseText.style.alignItems = 'center';
+      chooseText.style.justifyContent = 'center';
+      mainArea.appendChild(chooseText);
+      // Remove showing first race image by default
+      // if (races.length > 0) showImage(races[0]);
+      // Relabel the OK button
+      okBtn.textContent = 'OK';
+
+      cancelBtn.onclick = () => {
+        document.body.removeChild(overlay);
+        resolve(null);
+      };
+      okBtn.onclick = () => {
+        if (selectedRace) {
+          document.body.removeChild(overlay);
+          resolve(selectedRace);
+        }
+      };
     });
   }
 } 

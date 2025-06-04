@@ -1,4 +1,6 @@
 import { Game } from './Game';
+import { ChooseRaceDialog } from './ChooseRaceDialog';
+import { Race } from './Race';
 
 /**
  * Shows a modal dialog for creating a new game, allowing up to 8 players (normal or AI).
@@ -92,16 +94,33 @@ export function showNewGameDialog(onGameCreated: (game: Game) => void) {
   // Game instance
   const game = new Game();
   // Track player names for display
-  const playerNames: { name: string, isAI: boolean }[] = [];
+  const playerInfos: { name: string, isAI: boolean, race: Race | null }[] = [];
 
   function updatePlayerList() {
     playerList.innerHTML = '';
-    playerNames.forEach((p, i) => {
+    playerInfos.forEach((p, i) => {
       const li = document.createElement('li');
       li.style.color = '#fff';
       li.style.fontSize = '1.1em';
       li.style.marginBottom = '6px';
-      li.textContent = `${p.name} ${p.isAI ? '(AI)' : ''}`;
+      li.style.display = 'flex';
+      li.style.alignItems = 'center';
+      // Race image (if chosen)
+      if (p.race && p.race.image) {
+        const img = document.createElement('img');
+        img.src = p.race.image;
+        img.style.width = '2em';
+        img.style.height = '2em';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '0.5em';
+        img.style.marginRight = '0.7em';
+        li.appendChild(img);
+      }
+      let label = `${p.name} ${p.isAI ? '(AI)' : ''}`;
+      if (p.race && p.race.name) {
+        label += ` — ${p.race.name}`;
+      }
+      li.appendChild(document.createTextNode(label));
       // Remove button
       const removeBtn = document.createElement('button');
       removeBtn.textContent = '✖';
@@ -111,7 +130,7 @@ export function showNewGameDialog(onGameCreated: (game: Game) => void) {
       removeBtn.style.border = 'none';
       removeBtn.style.cursor = 'pointer';
       removeBtn.onclick = () => {
-        playerNames.splice(i, 1);
+        playerInfos.splice(i, 1);
         game.players.splice(i, 1);
         updatePlayerList();
       };
@@ -121,10 +140,13 @@ export function showNewGameDialog(onGameCreated: (game: Game) => void) {
   }
 
   async function addPlayer(isAI: boolean) {
-    const name = nameInput.value.trim() || `Player ${playerNames.length + 1}`;
+    const name = nameInput.value.trim() || `Player ${playerInfos.length + 1}`;
     const player = new (await import('./Player')).Player(0, isAI, name);
+    // Show race chooser dialog
+    const chosenRace = await ChooseRaceDialog.show((game as any).races || []);
+    player.race = chosenRace;
     if (game.addPlayer(player)) {
-      playerNames.push({ name, isAI });
+      playerInfos.push({ name, isAI, race: chosenRace });
       updatePlayerList();
       nameInput.value = '';
     } else {

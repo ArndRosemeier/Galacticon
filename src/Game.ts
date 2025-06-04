@@ -2,7 +2,20 @@ import { Universe } from './Universe';
 import { QuadrantFactory } from './QuadrantFactory';
 import { Player } from './Player';
 import { ImageCollection } from './ImageCollection';
-
+import { Race } from './Race';
+import { PlanetType } from './Planet';
+import { Propulsion } from './techs/Propulsion';
+import { EnergyShields } from './techs/EnergyShields';
+import { Espionage } from './techs/Espionage';
+import { Sensors } from './techs/Sensors';
+import { Construction } from './techs/Construction';
+import { EnergyWeapons } from './techs/EnergyWeapons';
+import { ProjectileWeapons } from './techs/ProjectileWeapons';
+import { RocketWeapons } from './techs/RocketWeapons';
+import { PopulationGrowth } from './techs/PopulationGrowth';
+import { Terraforming } from './techs/Terraforming';
+import { Automation } from './techs/Automation';
+import { Armor } from './techs/Armor';  
 /**
  * Main game class for Galacticon. Holds the universe and manages game state.
  */
@@ -22,6 +35,7 @@ export class Game {
   private listeners: (() => void)[] = [];
 
   public ShipImages: ImageCollection;
+  public races: Race[];
 
   /**
    * Create a new game and seed the universe with a starting quadrant at (0,0).
@@ -49,6 +63,63 @@ export class Game {
       ctx.drawImage(img, 0, 0);
       shipImages.AddCompoundImage(canvas);
     })();
+    // Initialize races array with all races found in public folder
+    this.races = [
+      new Race('Alkari', '/Alkari.png', '/Alkari.mp4', [PlanetType.Terrestrial], [
+        { TechName: Propulsion.Name, Bonus: 0.6 },
+        { TechName: EnergyShields.Name, Bonus: 0.4 }
+      ]),
+      new Race('Darlok', '/Darlok.png', '/Darlok.mp4', [PlanetType.Terrestrial], [
+        { TechName: Espionage.Name, Bonus: 1.0 }
+      ]),
+      new Race('Elerian', '/Elerian.png', '/Elerian.mp4', [PlanetType.Terrestrial], [
+        { TechName: EnergyShields.Name, Bonus: 0.5 }, { TechName: Sensors.Name, Bonus: 0.5 }
+      ]),
+      new Race('Klackon', '/Klackon.png', '/Klackon.mp4', [PlanetType.Terrestrial], [
+        { TechName: Construction.Name, Bonus: 1.0 }
+      ]),
+      new Race('Meklar', '/Meklar.png', '/Meklar.mp4', [PlanetType.Terrestrial], [
+        { TechName: Automation.Name, Bonus: 0.5 }, { TechName: Construction.Name, Bonus: 0.5 }
+      ]),
+      new Race('Mrrshan', '/Mrrshan.png', '/Mrrshan.mp4', [PlanetType.Terrestrial], [
+        { TechName: EnergyWeapons.Name, Bonus: 0.4 },
+        { TechName: ProjectileWeapons.Name, Bonus: 0.4 },
+        { TechName: RocketWeapons.Name, Bonus: 0.4 }
+      ]),
+      new Race('Psilon', '/Psilon.png', '/Psilon.mp4', [], [
+        { TechName: Automation.Name, Bonus: 0.2 },
+        { TechName: EnergyShields.Name, Bonus: 0.2 },
+        { TechName: Terraforming.Name, Bonus: 0.2 },
+        { TechName: Propulsion.Name, Bonus: 0.2 },
+        { TechName: Construction.Name, Bonus: 0.2 },
+        { TechName: PopulationGrowth.Name, Bonus: 0.2 },
+        { TechName: EnergyWeapons.Name, Bonus: 0.2 },
+        { TechName: ProjectileWeapons.Name, Bonus: 0.2 },
+        { TechName: RocketWeapons.Name, Bonus: 0.2 },
+        { TechName: Sensors.Name, Bonus: 0.2 },
+        { TechName: Espionage.Name, Bonus: 0.2 }
+      ]),
+      new Race('Sakkra', '/Sakkra.png', '/Sakkra.mp4', [PlanetType.Terrestrial, PlanetType.Ocean], [
+        { TechName: PopulationGrowth.Name, Bonus: 1.0 }
+      ]),
+      new Race('Silicoid', '/Silicoid.png', '/Silicoid.mp4', [
+        PlanetType.SubEarth,
+        PlanetType.SuperEarth,
+        PlanetType.Terrestrial,
+        PlanetType.Exotic,
+        PlanetType.Lava,
+        PlanetType.Desert,
+        PlanetType.Ice
+      ], []),
+      new Race('Terran', '/Terran.png', '/Terran.mp4', [PlanetType.Terrestrial], [
+        { TechName: Espionage.Name, Bonus: 0.4 },
+        { TechName: Terraforming.Name, Bonus: 0.4 },
+        { TechName: Construction.Name, Bonus: 0.2 }
+      ]),
+      new Race('Trilarian', '/Trilarian.png', '/Trilarian.mp4', [PlanetType.Ocean], [
+        { TechName: Propulsion.Name, Bonus: 0.5 }, { TechName: EnergyWeapons.Name, Bonus: 0.5 }
+      ]),
+    ];
   }
 
   /**

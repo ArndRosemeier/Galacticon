@@ -78,8 +78,41 @@ export class StarSystemFactory {
       const radius = this.randomPlanetRadius(type);
       const mass = this.randomPlanetMass(type, radius);
       const rotationPeriod = Math.round(6 + Math.random() * 1000) / 10; // 6-106 hours
+      // Assign habitability and minerals based on type
+      let habitability = 0.1, minerals = 10;
+      switch (type) {
+        case PlanetType.Terrestrial:
+        case PlanetType.Ocean:
+        case PlanetType.SuperEarth:
+          habitability = 0.7 + Math.random() * 0.3; // 0.7-1.0
+          minerals = 40 + Math.random() * 40; // 40-80
+          break;
+        case PlanetType.Desert:
+        case PlanetType.Ice:
+        case PlanetType.SubEarth:
+          habitability = 0.4 + Math.random() * 0.3; // 0.4-0.7
+          minerals = 30 + Math.random() * 40; // 30-70
+          break;
+        case PlanetType.Lava:
+        case PlanetType.Exotic:
+          habitability = 0.1 + Math.random() * 0.3; // 0.1-0.4
+          minerals = 60 + Math.random() * 40; // 60-100
+          break;
+        case PlanetType.GasGiant:
+        case PlanetType.IceGiant:
+          habitability = 0.1 + Math.random() * 0.2; // 0.1-0.3
+          minerals = 10 + Math.random() * 30; // 10-40
+          break;
+        case PlanetType.Dwarf:
+          habitability = 0.1 + Math.random() * 0.1; // 0.1-0.2
+          minerals = 10 + Math.random() * 20; // 10-30
+          break;
+      }
       // Create planet (parentSystem will be set after StarSystem is constructed)
-      planets.push(new Planet(type, radius, mass, rotationPeriod));
+      const planet = new Planet(type, radius, mass, rotationPeriod);
+      planet.habitability = habitability;
+      planet.minerals = minerals;
+      planets.push(planet);
     }
     // Create the star system, which will set parentSystem and parentQuadrant
     const system = new StarSystem(star, planets, parentQuadrant);
