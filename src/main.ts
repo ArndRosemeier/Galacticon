@@ -83,46 +83,49 @@ if (app) {
     uiPanel.style.background = '#0a1020';
     uiPanel.style.borderRadius = `${innerPanelRadius}px`;
     uiPanel.style.boxShadow = '0 0 48px #00fff799, 0 0 8px #0ff';
-    // New Game button
-    const newGameBtn = document.createElement('button');
-    newGameBtn.textContent = 'New Game';
-    newGameBtn.style.position = 'absolute';
-    newGameBtn.style.top = '16px';
-    newGameBtn.style.right = '24px';
-    newGameBtn.style.background = 'linear-gradient(90deg, #00fff7 0%, #0f3460 100%)';
-    newGameBtn.style.color = '#181818';
-    newGameBtn.style.fontWeight = 'bold';
-    newGameBtn.style.border = 'none';
-    newGameBtn.style.borderRadius = '8px';
-    newGameBtn.style.padding = '10px 24px';
-    newGameBtn.style.fontSize = '1.1em';
-    newGameBtn.style.cursor = 'pointer';
-    newGameBtn.style.boxShadow = '0 0 8px #00fff7aa';
-    // Sidebar (game info)
+    // Sidebar (game info) and New Game button
     let currentSidebar: HTMLDivElement | null = null;
+    let newGameBtn: HTMLButtonElement | null = null;
     function redrawSidebar() {
+      // Remove old sidebar and button
       if (currentSidebar) currentSidebar.remove();
+      if (newGameBtn) newGameBtn.remove();
+      // Sidebar
       currentSidebar = createSidebar();
+      currentSidebar.style.zIndex = '1';
       uiPanel.appendChild(currentSidebar);
+      // New Game button
+      newGameBtn = document.createElement('button');
+      newGameBtn.textContent = 'New Game';
+      newGameBtn.style.position = 'absolute';
+      newGameBtn.style.top = '16px';
+      newGameBtn.style.right = '24px';
+      newGameBtn.style.background = 'linear-gradient(90deg, #00fff7 0%, #0f3460 100%)';
+      newGameBtn.style.color = '#181818';
+      newGameBtn.style.fontWeight = 'bold';
+      newGameBtn.style.border = 'none';
+      newGameBtn.style.borderRadius = '8px';
+      newGameBtn.style.padding = '10px 24px';
+      newGameBtn.style.fontSize = '1.1em';
+      newGameBtn.style.cursor = 'pointer';
+      newGameBtn.style.boxShadow = '0 0 8px #00fff7aa';
+      newGameBtn.style.zIndex = '2';
+      newGameBtn.onclick = () => {
+        showNewGameDialog((game) => {
+          currentGame = game;
+          renderUniverse(game);
+          redrawSidebar();
+          game.start();
+          game.onChange(() => {
+            redrawSidebar();
+          });
+          // Debug: log player names
+          console.log('Players in new game:', game.players.map(p => p.name));
+        });
+      };
+      uiPanel.appendChild(newGameBtn);
     }
     redrawSidebar();
-    uiPanel.appendChild(newGameBtn);
-    newGameBtn.onclick = () => {
-      showNewGameDialog((game) => {
-        currentGame = game;
-        renderUniverse(game);
-        redrawSidebar();
-        game.start();
-        game.onChange(() => {
-          redrawSidebar();
-        });
-        // Debug: log player names
-        console.log('Players in new game:', game.players.map(p => p.name));
-      });
-    };
-    // Remove the initial call to UniverseRenderTest and the creation of a temporary universe.
-    // The view area will remain blank until a new game is started.
-    // (No call to renderUniverse or UniverseRenderTest here)
     container.appendChild(viewPanel);
     container.appendChild(uiPanel);
   }

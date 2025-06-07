@@ -20,6 +20,8 @@ export class Quadrant {
   public starSystems: StarSystemLocation[];
   /** The parent universe of this quadrant */
   public parentUniverse: import('./Universe').Universe;
+  /** The grid position of this quadrant in the universe */
+  public position: { x: number, y: number } | null = null;
 
   /**
    * Create a new Quadrant.

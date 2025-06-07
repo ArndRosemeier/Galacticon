@@ -1,29 +1,30 @@
-import { Propulsion } from './equipment/Propulsion';
-import { Armor } from './equipment/Armor';
-import { EnergyShield } from './equipment/EnergyShield';
-import { PointDefense } from './equipment/PointDefense';
-import { EnergyWeapons } from './equipment/EnergyWeapons';
-import { Missiles } from './equipment/Missiles';
-import { ProjectileWeapons } from './equipment/ProjectileWeapons';
-import { Sensors } from './equipment/Sensors';
-import { EnergySystems } from './equipment/EnergySystems';
-import { Stealth } from './equipment/Stealth';
+import { Propulsion } from './techs/Propulsion';
+import { Armor } from './techs/Armor';
+import { EnergyShields } from './techs/EnergyShields';
+import { PointDefense } from './techs/PointDefense';
+import { EnergyWeapons } from './techs/EnergyWeapons';
+import { RocketWeapons } from './techs/RocketWeapons';
+import { ProjectileWeapons } from './techs/ProjectileWeapons';
+import { Sensors } from './techs/Sensors';
+import { EnergySystems } from './techs/EnergySystems';
 import { Player } from './Player';
+import { Utils } from './Utils';
+import { Stealth } from './techs/Stealth';
 
 export class Ship {
   propulsion: Propulsion;
   armor: Armor;
-  energyShield: EnergyShield;
+  energyShields: EnergyShields;
   pointDefense: PointDefense;
   energyWeapons: EnergyWeapons;
-  missiles: Missiles;
+  rocketWeapons: RocketWeapons;
   projectileWeapons: ProjectileWeapons;
   sensors: Sensors;
   energySystems: EnergySystems;
-  stealth: Stealth;
   player: Player;
+  stealth: Stealth;
 
-  equipment: Array<import('./Equipment').Equipment>;
+  equipment: Array<import('./Tech').Tech>;
 
   static readonly TotalEquipmentStrength = 100;
 
@@ -36,14 +37,17 @@ export class Ship {
   Colonists: number = 0;
   Troops: number = 0;
 
+  /** The ship's position in combat (for tactical combat UI, etc.) */
+  CombatPosition: { x: number, y: number } = { x: 0, y: 0 };
+
   constructor(player: Player) {
     this.player = player;
     this.propulsion = new Propulsion();
     this.armor = new Armor();
-    this.energyShield = new EnergyShield();
+    this.energyShields = new EnergyShields();
     this.pointDefense = new PointDefense();
     this.energyWeapons = new EnergyWeapons();
-    this.missiles = new Missiles();
+    this.rocketWeapons = new RocketWeapons();
     this.projectileWeapons = new ProjectileWeapons();
     this.sensors = new Sensors();
     this.energySystems = new EnergySystems();
@@ -51,10 +55,10 @@ export class Ship {
     this.equipment = [
       this.propulsion,
       this.armor,
-      this.energyShield,
+      this.energyShields,
       this.pointDefense,
       this.energyWeapons,
-      this.missiles,
+      this.rocketWeapons,
       this.projectileWeapons,
       this.sensors,
       this.energySystems,
@@ -64,44 +68,90 @@ export class Ship {
     const equalStrength = Ship.TotalEquipmentStrength / this.equipment.length;
     this.equipment.forEach(e => e.Strength = equalStrength);
     // Set each equipment's Efficiency to the related tech's efficiency from the player
-    this.propulsion.Efficiency = player.propulsion.getEfficiency();
-    this.armor.Efficiency = player.armor.getEfficiency();
-    this.energyShield.Efficiency = player.energyShields.getEfficiency();
-    this.pointDefense.Efficiency = player.pointDefense.getEfficiency();
-    this.energyWeapons.Efficiency = player.energyWeapons.getEfficiency();
-    this.missiles.Efficiency = player.rocketWeapons.getEfficiency();
-    this.projectileWeapons.Efficiency = player.projectileWeapons.getEfficiency();
-    this.sensors.Efficiency = player.sensors.getEfficiency();
-    this.energySystems.Efficiency = player.energySystems.getEfficiency();
-    // Stealth does not have a direct tech, so leave Efficiency as default or set as needed
+    this.propulsion.StartEfficiency = player.propulsion.getEfficiency();
+    this.armor.StartEfficiency = player.armor.getEfficiency();
+    this.energyShields.StartEfficiency = player.energyShields.getEfficiency();
+    this.pointDefense.StartEfficiency = player.pointDefense.getEfficiency();
+    this.energyWeapons.StartEfficiency = player.energyWeapons.getEfficiency();
+    this.rocketWeapons.StartEfficiency = player.rocketWeapons.getEfficiency();
+    this.projectileWeapons.StartEfficiency = player.projectileWeapons.getEfficiency();
+    this.sensors.StartEfficiency = player.sensors.getEfficiency();
+    this.energySystems.StartEfficiency = player.energySystems.getEfficiency();
   }
 
   SetEquipmentStrength(name: string, value: number) {
     // Clamp value between 0 and TotalEquipmentStrength
     value = Math.max(0, Math.min(Ship.TotalEquipmentStrength, value));
-    const eq = this.equipment.find(e => e.Name === name);
-    if (!eq) return;
-    const others = this.equipment.filter(e => e !== eq);
-    const totalOther = others.reduce((sum, e) => sum + e.Strength, 0);
-    eq.Strength = value;
-    const remaining = Ship.TotalEquipmentStrength - value;
-    if (others.length === 0) return;
-    if (totalOther === 0) {
-      // If all others are zero, distribute remaining equally
-      const per = remaining / others.length;
-      others.forEach(e => e.Strength = per);
-    } else {
-      // Scale others proportionally
-      others.forEach(e => {
-        e.Strength = totalOther === 0 ? 0 : (e.Strength / totalOther) * remaining;
-      });
+    const idx = this.equipment.findIndex(e => e.Name === name);
+    if (idx === -1) return;
+    const strengths = this.equipment.map(e => Math.round(e.Strength));
+    const newStrengths = Utils.distribute(strengths, idx, Math.round(value), Ship.TotalEquipmentStrength);
+    this.equipment.forEach((e, i) => e.Strength = newStrengths[i]);
+  }
+
+  /**
+   * Returns the total damage ratio: sum of all equipment Efficiency divided by sum of all StartEfficiency.
+   */
+  totalDamageRatio(): number {
+    const totalEff = this.equipment.reduce((sum, eq) => sum + eq.Efficiency, 0);
+    const totalStart = this.equipment.reduce((sum, eq) => sum + eq.StartEfficiency, 0);
+    if (totalStart === 0) return 0;
+    return totalEff / totalStart;
+  }
+
+  /**
+   * Applies damage to the ship. Returns true if destroyed, false if just damaged.
+   */
+  takeDamage(damage: number): boolean {
+    let remaining = damage;
+    // Get all equipment with Efficiency > 0
+    const valid = this.equipment.filter(eq => eq.Efficiency > 0);
+    if (valid.length === 0) return true; // Already dead
+    // Shuffle for random selection
+    let pool = [...valid];
+    while (remaining > 0 && pool.length > 0) {
+      // Pick a random equipment from pool
+      const idx = Math.floor(Math.random() * pool.length);
+      const eq = pool[idx];
+      if (eq.Efficiency >= remaining) {
+        eq.Efficiency -= remaining;
+        remaining = 0;
+      } else {
+        remaining -= eq.Efficiency;
+        eq.Efficiency = 0;
+        // Remove from pool
+        pool.splice(idx, 1);
+      }
     }
-    // Final adjustment for floating point errors
-    const total = this.equipment.reduce((sum, e) => sum + e.Strength, 0);
-    if (Math.abs(total - Ship.TotalEquipmentStrength) > 0.01) {
-      // Adjust the first equipment to make the sum exactly TotalEquipmentStrength
-      const diff = Ship.TotalEquipmentStrength - total;
-      this.equipment[0].Strength += diff;
+    // Compute total damage ratio
+    const ratio = this.totalDamageRatio();
+    if (ratio < 0.5) {
+      // Chance to be destroyed: 1 at 0, 0 at 0.5, linear
+      const chance = 1 - ratio / 0.5;
+      if (Math.random() < chance) return true; // Destroyed
     }
+    return false; // Just damaged
+  }
+
+  /**
+   * Returns the ship's weight: size + colonists * 0.1 + troops * 0.1
+   */
+  Weight(): number {
+    return this.Size + this.Colonists * 0.1 + this.Troops * 0.1;
+  }
+
+  /**
+   * Returns the ship's speed factor: Size / Weight()
+   */
+  SpeedFactor(): number {
+    const denom = this.Weight();
+    return denom > 0 ? this.Size / denom : 0;
+  }
+
+  /**
+   * Returns the ship's speed: propulsion.Efficiency * SpeedFactor()
+   */
+  Speed(): number {
+    return this.propulsion.Efficiency * this.SpeedFactor();
   }
 } 

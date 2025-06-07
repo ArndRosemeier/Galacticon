@@ -29,35 +29,6 @@ export function createSidebar(): HTMLDivElement {
   }
   updateInfo();
   sidebar.appendChild(info);
-  // Show current player's race (if any)
-  if (currentGame && currentGame.players.length > 0 && currentGame.activePlayer >= 0 && currentGame.activePlayer < currentGame.players.length) {
-    const player = currentGame.players[currentGame.activePlayer];
-    if (player.race) {
-      const raceRow = document.createElement('div');
-      raceRow.style.display = 'flex';
-      raceRow.style.alignItems = 'center';
-      raceRow.style.margin = '12px 0 0 0';
-      raceRow.style.position = 'absolute';
-      raceRow.style.top = '48px';
-      raceRow.style.left = '24px';
-      raceRow.style.zIndex = '2';
-      const img = document.createElement('img');
-      img.src = player.race.image;
-      img.style.width = '2.2em';
-      img.style.height = '2.2em';
-      img.style.objectFit = 'cover';
-      img.style.borderRadius = '0.5em';
-      img.style.marginRight = '0.7em';
-      raceRow.appendChild(img);
-      const name = document.createElement('span');
-      name.textContent = player.race.name;
-      name.style.color = '#00fff7';
-      name.style.fontWeight = 'bold';
-      name.style.fontSize = '1.1em';
-      raceRow.appendChild(name);
-      sidebar.appendChild(raceRow);
-    }
-  }
   // Player list
   if (currentGame && currentGame.players.length > 0 && currentGame.activePlayer >= 0 && currentGame.activePlayer < currentGame.players.length) {
     const list = document.createElement('ul');
@@ -147,6 +118,31 @@ export function createSidebar(): HTMLDivElement {
     console.log('Selected race:', selected);
   };
   sidebar.appendChild(chooseRaceBtn);
+  // Add Research button
+  const researchBtn = document.createElement('button');
+  researchBtn.textContent = 'Research';
+  researchBtn.style.position = 'absolute';
+  researchBtn.style.bottom = '128px';
+  researchBtn.style.left = '24px';
+  researchBtn.style.background = 'linear-gradient(90deg, #00fff7 0%, #0af 100%)';
+  researchBtn.style.color = '#181818';
+  researchBtn.style.fontWeight = 'bold';
+  researchBtn.style.border = 'none';
+  researchBtn.style.borderRadius = '8px';
+  researchBtn.style.padding = '10px 24px';
+  researchBtn.style.fontSize = '1.1em';
+  researchBtn.style.cursor = 'pointer';
+  researchBtn.style.boxShadow = '0 0 8px #00fff7aa';
+  researchBtn.onclick = async () => {
+    if (!currentGame || !currentGame.players || currentGame.players.length === 0 || currentGame.activePlayer < 0) {
+      alert('No game or players available. Start a game first.');
+      return;
+    }
+    const player = currentGame.players[currentGame.activePlayer];
+    const { ResearchDialog } = await import('./ResearchDialog');
+    await ResearchDialog.show(player);
+  };
+  sidebar.appendChild(researchBtn);
   // Optionally, expose a way to update info externally
   (sidebar as any).updateInfo = updateInfo;
   return sidebar;

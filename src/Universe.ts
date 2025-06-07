@@ -71,6 +71,7 @@ export class Universe {
     let quad = this.quadrants.get(key);
     if (!quad) {
       quad = QuadrantFactory.createRandomQuadrant(this);
+      quad.position = { x, y };
       this.quadrants.set(key, quad);
     }
     return quad;

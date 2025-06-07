@@ -1,13 +1,22 @@
 /**
- * Abstract base class for all technologies in Galacticon.
- * Handles research progress and efficiency calculation.
- * All specific techs should extend this class and implement the Name getter.
+ * Unified base class for all technologies and equipment in Galacticon.
+ * Handles research progress, efficiency calculation, and equipment properties.
+ * All specific techs and equipment should extend this class and implement the Name getter.
  */
+import type { EquipmentSpecification } from './equipment/EquipmentSpecification';
+
 export abstract class Tech {
   /** Total research points invested in this tech */
   public researchPoints: number;
   /** Research points scaling constant (higher = slower progress) */
   public readonly scaling: number;
+
+  /** Equipment-related fields */
+  public Strength: number = 0;
+  private _startEfficiency: number = 1;
+  public Efficiency: number = 1;
+  /** Whether this tech is also equipment */
+  public abstract get isEquipment(): boolean;
 
   /**
    * Create a new Tech instance.
@@ -25,11 +34,26 @@ export abstract class Tech {
   public abstract get Name(): string;
 
   /**
+   * Equipment specification (if any). Override in subclasses that are equipment.
+   */
+  public get Specification(): EquipmentSpecification | null {
+    return null;
+  }
+
+  get StartEfficiency(): number {
+    return this._startEfficiency;
+  }
+  set StartEfficiency(val: number) {
+    this._startEfficiency = val;
+    this.Efficiency = val;
+  }
+
+  /**
    * Invest research points into this technology.
    * Now always invests 1 point per call.
    */
   public invest() {
-    this.researchPoints += 100;
+    this.researchPoints += 10;
     // Loudly log investment
     console.log(`[Tech] ${this.Name} invested 1 research point. Total: ${this.researchPoints}`);
   }
@@ -41,5 +65,12 @@ export abstract class Tech {
    */
   public getEfficiency(): number {
     return 1 + 4 * (1 - Math.exp(-this.researchPoints / this.scaling));
+  }
+
+  /**
+   * Returns the total strength of this equipment (if applicable).
+   */
+  public TotalStrength(): number {
+    return this.Strength * this.getEfficiency();
   }
 } 

@@ -109,36 +109,20 @@ export class ShipConstructor {
           expandBtn.textContent = '▼';
           expandBtn.style.color = '#00fff7';
           expandBtn.onclick = () => {
-            // Collapse any other open cascade
-            specRows.forEach((sr, i) => {
-              if (i !== eqIdx && sr.parentElement) {
-                sr.style.display = 'none';
-                sr.parentElement.removeChild(sr);
+            // Hide any open cascade
+            if (unfoldedSpecIdx !== null && specRows[unfoldedSpecIdx]?.parentElement) {
+              specRows[unfoldedSpecIdx]!.style.display = 'none';
+              specRows[unfoldedSpecIdx]!.parentElement!.removeChild(specRows[unfoldedSpecIdx]!);
+              if (unfoldedSpecIdx === eqIdx) {
+                unfoldedSpecIdx = null;
+                return; // Toggle off if clicking the same row
               }
-            });
-            if (specCascade && specCascade.parentElement) {
-              specCascade.style.display = 'none';
-              specCascade.parentElement.removeChild(specCascade);
-              unfoldedSpecIdx = null;
-            } else if (specCascade) {
-              // Remove any other open cascade
-              if (
-                unfoldedSpecIdx !== null &&
-                specRows[unfoldedSpecIdx] &&
-                specRows[unfoldedSpecIdx].parentElement
-              ) {
-                if (specRows[unfoldedSpecIdx]) {
-                  specRows[unfoldedSpecIdx].style.display = 'none';
-                  if (specRows[unfoldedSpecIdx].parentElement) {
-                    specRows[unfoldedSpecIdx].parentElement.removeChild(specRows[unfoldedSpecIdx]);
-                  }
-                }
-                if (specCascade) {
-                  specCascade.style.display = 'flex';
-                  row.insertAdjacentElement('afterend', specCascade);
-                  unfoldedSpecIdx = eqIdx;
-                }
-              }
+            }
+            // Show this cascade
+            if (specCascade != null) {
+              specCascade!.style.display = 'flex';
+              row.insertAdjacentElement('afterend', specCascade!);
+              unfoldedSpecIdx = eqIdx;
             }
           };
         } else {
@@ -165,13 +149,25 @@ export class ShipConstructor {
         sliders.push(slider);
 
         const valueLabel = document.createElement('span');
-        valueLabel.textContent = eq.Strength.toFixed(2);
+        valueLabel.textContent = Math.round(eq.Strength).toString();
         valueLabel.style.width = '4vw';
         valueLabel.style.fontSize = '2vh';
         valueLabel.style.textAlign = 'right';
         valueLabel.style.textShadow = '0 0 0.8vw #00fff7';
         row.appendChild(valueLabel);
         valueLabels.push(valueLabel);
+
+        // --- FIX: Add slider event handler for redistribution ---
+        slider.oninput = () => {
+          const newValue = Number(slider.value);
+          ship.SetEquipmentStrength(eq.Name, newValue);
+          // Update all sliders and value labels to reflect new strengths
+          ship.equipment.forEach((e, i) => {
+            sliders[i].value = e.Strength.toString();
+            valueLabels[i].textContent = Math.round(e.Strength).toString();
+          });
+        };
+        // --- END FIX ---
 
         slidersSection.appendChild(row);
         sliderRowCount++;
@@ -237,11 +233,12 @@ export class ShipConstructor {
               if (specCascade) {
                 (eq.Specification!.Specifications() as string[]).forEach((_: string, j: number) => {
                   const val = eq.Specification!.SpecificationValues[j];
-                  if (specCascade && specCascade.children[j]) {
-                    const inputElem = specCascade.children[j].querySelector('input') as HTMLInputElement | null;
-                    const spanElem = specCascade.children[j].querySelector('span:last-child') as HTMLSpanElement | null;
+                  const child = specCascade.children[j];
+                  if (child) {
+                    const inputElem = child.querySelector('input') as HTMLInputElement | null;
+                    const spanElem = child.querySelector('span:last-child') as HTMLSpanElement | null;
                     if (inputElem) inputElem.value = val.toString();
-                    if (spanElem) spanElem.textContent = val.toFixed(2);
+                    if (spanElem) spanElem.textContent = Math.round(val).toString();
                   }
                 });
               }
@@ -314,58 +311,19 @@ export class ShipConstructor {
 
       // Initial values
       let stcSize = Math.max(2, Math.min(100, ship.Size || 2));
-      let stcTroops = Math.max(0, Math.min((stcSize-1)*10, ship.Troops || 0));
-      let stcColonists = Math.max(0, Math.min((stcSize-1)*10, ship.Colonists || 0));
+      let stcTroops = Math.max(0, Math.min(1000, ship.Troops || 0));
+      let stcColonists = Math.max(0, Math.min(1000, ship.Colonists || 0));
 
       const sizeSlider = makeSlider('Size', 2, 100, stcSize, v => {
         stcSize = v;
         ship.Size = v;
-        // Clamp troops and colonists
-        const maxTC = (stcSize-1)*10;
-        if (stcTroops > maxTC) {
-          stcTroops = maxTC;
-          troopsSlider.slider.value = stcTroops.toString();
-          troopsSlider.valueLabel.textContent = stcTroops.toString();
-          ship.Troops = stcTroops;
-        }
-        if (stcColonists > maxTC) {
-          stcColonists = maxTC;
-          colonistsSlider.slider.value = stcColonists.toString();
-          colonistsSlider.valueLabel.textContent = stcColonists.toString();
-          ship.Colonists = stcColonists;
-        }
-        // Clamp sum
-        if (stcTroops + stcColonists > maxTC) {
-          stcColonists = Math.max(0, maxTC - stcTroops);
-          colonistsSlider.slider.value = stcColonists.toString();
-          colonistsSlider.valueLabel.textContent = stcColonists.toString();
-          ship.Colonists = stcColonists;
-        }
-        troopsSlider.slider.max = maxTC.toString();
-        colonistsSlider.slider.max = maxTC.toString();
       });
-      const troopsSlider = makeSlider('Troops', 0, (stcSize-1)*10, stcTroops, v => {
-        const maxTC = (stcSize-1)*10;
+      const troopsSlider = makeSlider('Troops', 0, 1000, stcTroops, v => {
         stcTroops = v;
-        // Clamp colonists so sum does not exceed maxTC
-        if (stcTroops + stcColonists > maxTC) {
-          stcColonists = Math.max(0, maxTC - stcTroops);
-          colonistsSlider.slider.value = stcColonists.toString();
-          colonistsSlider.valueLabel.textContent = stcColonists.toString();
-        }
         ship.Troops = stcTroops;
-        ship.Colonists = stcColonists;
       });
-      const colonistsSlider = makeSlider('Colonists', 0, (stcSize-1)*10, stcColonists, v => {
-        const maxTC = (stcSize-1)*10;
+      const colonistsSlider = makeSlider('Colonists', 0, 1000, stcColonists, v => {
         stcColonists = v;
-        // Clamp troops so sum does not exceed maxTC
-        if (stcTroops + stcColonists > maxTC) {
-          stcTroops = Math.max(0, maxTC - stcColonists);
-          troopsSlider.slider.value = stcTroops.toString();
-          troopsSlider.valueLabel.textContent = stcTroops.toString();
-        }
-        ship.Troops = stcTroops;
         ship.Colonists = stcColonists;
       });
 
@@ -374,30 +332,23 @@ export class ShipConstructor {
       stcRow.appendChild(colonistsSlider.group);
       dialog.appendChild(stcRow);
 
-      // Set up slider event handlers after all rows are created
-      sliders.forEach((slider, idx) => {
-        slider.oninput = () => {
-          const eq = ship.equipment[idx];
-          ship.SetEquipmentStrength(eq.Name, Number(slider.value));
-          // Update all sliders and value labels, but do NOT create or append new elements
-          let updateCount = 0;
-          ship.equipment.forEach((e, i) => {
-            sliders[i].value = e.Strength.toString();
-            valueLabels[i].textContent = e.Strength.toFixed(2);
-            updateCount++;
-          });
-        };
-      });
+      // Info box for speed and price (directly below sliders)
+      const infoBox = document.createElement('div');
+      infoBox.style.fontSize = '1.5vh';
+      infoBox.style.color = '#bff';
+      infoBox.style.background = 'rgba(0,255,255,0.07)';
+      infoBox.style.borderRadius = '0.7vw';
+      infoBox.style.boxShadow = '0 0 0.5vw #00fff7aa';
+      infoBox.style.padding = '0.5vh 1vw';
+      infoBox.style.textAlign = 'left';
+      infoBox.style.margin = '0.5vh 0 1vh 0';
+      function updateInfoBox() {
+        infoBox.innerHTML = `Speed: <b>${ship.Speed().toFixed(2)}</b> &nbsp; | &nbsp; Price: <b>${(ship.Weight() * 1000).toLocaleString()}</b>`;
+      }
+      updateInfoBox();
+      dialog.appendChild(infoBox);
 
       // Ship image selection
-      const imgLabel = document.createElement('div');
-      imgLabel.textContent = 'Select Ship Image:';
-      imgLabel.style.marginTop = '1.5vh';
-      imgLabel.style.fontWeight = 'bold';
-      imgLabel.style.textShadow = '0 0 0.8vw #00fff7';
-      imgLabel.style.fontSize = '2vh';
-      dialog.appendChild(imgLabel);
-
       const imgRow = document.createElement('div');
       imgRow.style.display = 'flex';
       imgRow.style.gap = '1vw';
@@ -512,6 +463,29 @@ export class ShipConstructor {
       dialog.appendChild(btnRow);
       overlay.appendChild(dialog);
       document.body.appendChild(overlay);
+
+      // Update info box when size, troops, or colonists change
+      const updateAll = () => {
+        updateInfoBox();
+      };
+      sizeSlider.slider.oninput = () => {
+        stcSize = Math.round(Number(sizeSlider.slider.value));
+        sizeSlider.valueLabel.textContent = stcSize.toString();
+        ship.Size = stcSize;
+        updateAll();
+      };
+      troopsSlider.slider.oninput = () => {
+        stcTroops = Math.round(Number(troopsSlider.slider.value));
+        troopsSlider.valueLabel.textContent = stcTroops.toString();
+        ship.Troops = stcTroops;
+        updateAll();
+      };
+      colonistsSlider.slider.oninput = () => {
+        stcColonists = Math.round(Number(colonistsSlider.slider.value));
+        colonistsSlider.valueLabel.textContent = stcColonists.toString();
+        ship.Colonists = stcColonists;
+        updateAll();
+      };
     });
   }
 } 
