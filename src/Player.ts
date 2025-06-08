@@ -3,7 +3,7 @@ import { Armor } from './techs/Armor';
 import { EnergyShields } from './techs/EnergyShields';
 import { PointDefense } from './techs/PointDefense';
 import { EnergyWeapons } from './techs/EnergyWeapons';
-import { RocketWeapons } from './techs/RocketWeapons';
+import { Missiles } from './techs/Missiles';
 import { ProjectileWeapons } from './techs/ProjectileWeapons';
 import { Construction } from './techs/Construction';
 import { Sensors } from './techs/Sensors';
@@ -12,6 +12,7 @@ import { EnergySystems } from './techs/EnergySystems';
 import { PopulationGrowth } from './techs/PopulationGrowth';
 import { Terraforming } from './techs/Terraforming';
 import { Espionage } from './techs/Espionage';
+import { Stealth }  from './techs/Stealth';
 import { Tech } from './Tech';
 import { Game } from './Game';
 
@@ -36,7 +37,7 @@ export class Player {
   public energyShields: EnergyShields;
   public pointDefense: PointDefense;
   public energyWeapons: EnergyWeapons;
-  public rocketWeapons: RocketWeapons;
+  public rocketWeapons: Missiles;
   public projectileWeapons: ProjectileWeapons;
   public construction: Construction;
   public sensors: Sensors;
@@ -45,6 +46,7 @@ export class Player {
   public populationGrowth: PopulationGrowth;
   public terraforming: Terraforming;
   public espionage: Espionage;
+  public stealth: Stealth;
   public allTechs: Tech[];
 
   /**
@@ -52,26 +54,30 @@ export class Player {
    * @param money Initial money (default: 0)
    * @param isAI Whether this player is an AI (default: false)
    * @param name The player's name (default: '')
+   * @param race The player's chosen race
    */
-  constructor(money: number = 0, isAI: boolean = false, name: string = '') {
+  constructor(money: number = 0, isAI: boolean = false, name: string = '', race: import('./Race').Race) {
+    if (!race) throw new Error('Player: race must be provided and not null/undefined');
     this.money = money;
     this.isAI = isAI;
     this.name = name;
     this.knownQuadrants = [];
-    this.propulsion = new Propulsion();
-    this.armor = new Armor();
-    this.energyShields = new EnergyShields();
-    this.pointDefense = new PointDefense();
-    this.energyWeapons = new EnergyWeapons();
-    this.rocketWeapons = new RocketWeapons();
-    this.projectileWeapons = new ProjectileWeapons();
-    this.construction = new Construction();
-    this.sensors = new Sensors();
-    this.automation = new Automation();
-    this.energySystems = new EnergySystems();
-    this.populationGrowth = new PopulationGrowth();
-    this.terraforming = new Terraforming();
-    this.espionage = new Espionage();
+    this.race = race;
+    this.propulsion = new Propulsion(this.race);
+    this.armor = new Armor(this.race);
+    this.energyShields = new EnergyShields(this.race);
+    this.pointDefense = new PointDefense(this.race);
+    this.energyWeapons = new EnergyWeapons(this.race);
+    this.rocketWeapons = new Missiles(this.race);
+    this.projectileWeapons = new ProjectileWeapons(this.race);
+    this.construction = new Construction(this.race);
+    this.sensors = new Sensors(this.race);
+    this.automation = new Automation(this.race);
+    this.energySystems = new EnergySystems(this.race);
+    this.populationGrowth = new PopulationGrowth(this.race);
+    this.terraforming = new Terraforming(this.race);
+    this.espionage = new Espionage(this.race);
+    this.stealth = new Stealth(this.race);
     this.allTechs = [
       this.propulsion,
       this.armor,
@@ -86,9 +92,9 @@ export class Player {
       this.energySystems,
       this.populationGrowth,
       this.terraforming,
-      this.espionage
+      this.espionage,
+      this.stealth
     ];
-    this.race = null;
   }
 
   /**

@@ -1,8 +1,12 @@
 import { EquipmentSpecification } from './EquipmentSpecification';
 
 export class MissileSpecification extends EquipmentSpecification {
+  static readonly SPEED = 'Speed';
+  static readonly ARMOR = 'Armor';
+  static readonly PAYLOAD = 'Payload';
+  static readonly SPEC_NAMES = [MissileSpecification.SPEED, MissileSpecification.ARMOR, MissileSpecification.PAYLOAD];
   Specifications(): string[] {
-    return ['Speed', 'Armor', 'Payload'];
+    return MissileSpecification.SPEC_NAMES;
   }
 
   constructor() {

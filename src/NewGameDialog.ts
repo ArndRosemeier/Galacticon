@@ -141,10 +141,10 @@ export function showNewGameDialog(onGameCreated: (game: Game) => void) {
 
   async function addPlayer(isAI: boolean) {
     const name = nameInput.value.trim() || `Player ${playerInfos.length + 1}`;
-    const player = new (await import('./Player')).Player(0, isAI, name);
-    // Show race chooser dialog
+    // Show race chooser dialog first
     const chosenRace = await ChooseRaceDialog.show((game as any).races || []);
-    player.race = chosenRace;
+    if (!chosenRace) return; // User cancelled
+    const player = new (await import('./Player')).Player(0, isAI, name, chosenRace);
     if (game.addPlayer(player)) {
       playerInfos.push({ name, isAI, race: chosenRace });
       updatePlayerList();

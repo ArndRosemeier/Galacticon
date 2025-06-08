@@ -11,7 +11,7 @@ import { Sensors } from './techs/Sensors';
 import { Construction } from './techs/Construction';
 import { EnergyWeapons } from './techs/EnergyWeapons';
 import { ProjectileWeapons } from './techs/ProjectileWeapons';
-import { RocketWeapons } from './techs/RocketWeapons';
+import { Missiles } from './techs/Missiles';
 import { PopulationGrowth } from './techs/PopulationGrowth';
 import { Terraforming } from './techs/Terraforming';
 import { Automation } from './techs/Automation';
@@ -84,7 +84,7 @@ export class Game {
       new Race('Mrrshan', '/Mrrshan.png', '/Mrrshan.mp4', [PlanetType.Terrestrial], [
         { TechName: EnergyWeapons.Name, Bonus: 0.4 },
         { TechName: ProjectileWeapons.Name, Bonus: 0.4 },
-        { TechName: RocketWeapons.Name, Bonus: 0.4 }
+        { TechName: Missiles.Name, Bonus: 0.4 }
       ]),
       new Race('Psilon', '/Psilon.png', '/Psilon.mp4', [], [
         { TechName: Automation.Name, Bonus: 0.2 },
@@ -95,7 +95,7 @@ export class Game {
         { TechName: PopulationGrowth.Name, Bonus: 0.2 },
         { TechName: EnergyWeapons.Name, Bonus: 0.2 },
         { TechName: ProjectileWeapons.Name, Bonus: 0.2 },
-        { TechName: RocketWeapons.Name, Bonus: 0.2 },
+        { TechName: Missiles.Name, Bonus: 0.2 },
         { TechName: Sensors.Name, Bonus: 0.2 },
         { TechName: Espionage.Name, Bonus: 0.2 }
       ]),

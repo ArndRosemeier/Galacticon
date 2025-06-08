@@ -3,7 +3,7 @@ import { Armor } from './techs/Armor';
 import { EnergyShields } from './techs/EnergyShields';
 import { PointDefense } from './techs/PointDefense';
 import { EnergyWeapons } from './techs/EnergyWeapons';
-import { RocketWeapons } from './techs/RocketWeapons';
+import { Missiles } from './techs/Missiles';
 import { ProjectileWeapons } from './techs/ProjectileWeapons';
 import { Sensors } from './techs/Sensors';
 import { EnergySystems } from './techs/EnergySystems';
@@ -17,7 +17,7 @@ export class Ship {
   energyShields: EnergyShields;
   pointDefense: PointDefense;
   energyWeapons: EnergyWeapons;
-  rocketWeapons: RocketWeapons;
+  rocketWeapons: Missiles;
   projectileWeapons: ProjectileWeapons;
   sensors: Sensors;
   energySystems: EnergySystems;
@@ -40,18 +40,21 @@ export class Ship {
   /** The ship's position in combat (for tactical combat UI, etc.) */
   CombatPosition: { x: number, y: number } = { x: 0, y: 0 };
 
+  public EnergyLevel: number;
+
   constructor(player: Player) {
     this.player = player;
-    this.propulsion = new Propulsion();
-    this.armor = new Armor();
-    this.energyShields = new EnergyShields();
-    this.pointDefense = new PointDefense();
-    this.energyWeapons = new EnergyWeapons();
-    this.rocketWeapons = new RocketWeapons();
-    this.projectileWeapons = new ProjectileWeapons();
-    this.sensors = new Sensors();
-    this.energySystems = new EnergySystems();
-    this.stealth = new Stealth();
+    if (!player.race) throw new Error('Ship: player.race must be set');
+    this.propulsion = player.propulsion.Clone();
+    this.armor = player.armor.Clone();
+    this.energyShields = player.energyShields.Clone();
+    this.pointDefense = player.pointDefense.Clone();
+    this.energyWeapons = player.energyWeapons.Clone();
+    this.rocketWeapons = player.rocketWeapons.Clone();
+    this.projectileWeapons = player.projectileWeapons.Clone();
+    this.sensors = player.sensors.Clone();
+    this.energySystems = player.energySystems.Clone();
+    this.stealth = player.stealth?.Clone() ?? new Stealth(player.race);
     this.equipment = [
       this.propulsion,
       this.armor,
@@ -77,6 +80,9 @@ export class Ship {
     this.projectileWeapons.StartEfficiency = player.projectileWeapons.getEfficiency();
     this.sensors.StartEfficiency = player.sensors.getEfficiency();
     this.energySystems.StartEfficiency = player.energySystems.getEfficiency();
+    // Set Owner for all techs
+    this.equipment.forEach(e => e.Owner = this);
+    this.EnergyLevel = 5 * this.energySystems.TotalStrength();
   }
 
   SetEquipmentStrength(name: string, value: number) {
@@ -103,6 +109,7 @@ export class Ship {
    * Applies damage to the ship. Returns true if destroyed, false if just damaged.
    */
   takeDamage(damage: number): boolean {
+    damage = damage / this.Size;
     let remaining = damage;
     // Get all equipment with Efficiency > 0
     const valid = this.equipment.filter(eq => eq.Efficiency > 0);
@@ -149,9 +156,9 @@ export class Ship {
   }
 
   /**
-   * Returns the ship's speed: propulsion.Efficiency * SpeedFactor()
+   * Returns the ship's speed: propulsion.TotalStrength() * SpeedFactor()
    */
   Speed(): number {
-    return this.propulsion.Efficiency * this.SpeedFactor();
+    return this.propulsion.TotalStrength() * this.SpeedFactor();
   }
 } 

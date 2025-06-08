@@ -4,6 +4,8 @@
  * All specific techs and equipment should extend this class and implement the Name getter.
  */
 import type { EquipmentSpecification } from './equipment/EquipmentSpecification';
+import type { Race } from './Race';
+import type { Ship } from './Ship';
 
 export abstract class Tech {
   /** Total research points invested in this tech */
@@ -18,11 +20,16 @@ export abstract class Tech {
   /** Whether this tech is also equipment */
   public abstract get isEquipment(): boolean;
 
+  protected race: Race;
+  public Owner: Ship | undefined;
+
   /**
    * Create a new Tech instance.
+   * @param race The owning race for this tech
    * @param scaling Controls how quickly efficiency approaches 5 (default: 200)
    */
-  constructor(scaling: number = 200) {
+  constructor(race: Race, scaling: number = 200) {
+    this.race = race;
     this.researchPoints = 0;
     this.scaling = scaling;
   }
@@ -68,9 +75,14 @@ export abstract class Tech {
   }
 
   /**
-   * Returns the total strength of this equipment (if applicable).
+   * Returns the total strength of this equipment (if applicable), using the tech's race.
    */
   public TotalStrength(): number {
-    return this.Strength * this.getEfficiency();
+    return this.Strength * this.race.Efficiency(this);
   }
+
+  /**
+   * Clone this tech instance. Must be implemented by all subclasses.
+   */
+  public abstract Clone(): Tech;
 } 

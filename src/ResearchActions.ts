@@ -10,7 +10,7 @@ import { Automation } from './techs/Automation';
 import { Sensors } from './techs/Sensors';
 import { Construction } from './techs/Construction';
 import { ProjectileWeapons } from './techs/ProjectileWeapons';
-import { RocketWeapons } from './techs/RocketWeapons';
+import { Missiles } from './techs/Missiles';
 import { EnergyWeapons } from './techs/EnergyWeapons';
 import { PointDefense } from './techs/PointDefense';
 import { EnergyShields } from './techs/EnergyShields';

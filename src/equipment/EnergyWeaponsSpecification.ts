@@ -1,6 +1,9 @@
 export class EnergyWeaponsSpecification extends (await import('./EquipmentSpecification')).EquipmentSpecification {
+  static readonly FOCUS = 'Focus';
+  static readonly FORCE = 'Force';
+  static readonly SPEC_NAMES = [EnergyWeaponsSpecification.FOCUS, EnergyWeaponsSpecification.FORCE];
   Specifications(): string[] {
-    return ['Focus', 'Force'];
+    return EnergyWeaponsSpecification.SPEC_NAMES;
   }
 
   constructor() {

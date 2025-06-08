@@ -42,7 +42,7 @@ export class ResearchDialog {
       const techList = document.createElement('div');
       techList.style.display = 'grid';
       techList.style.gridTemplateColumns = '1fr 1fr';
-      techList.style.gap = '0.7vh 4vw';
+      techList.style.gap = '0.35vh 4vw';
       techList.style.overflowY = 'auto';
       techList.style.flex = '1 1 0';
       techList.style.justifyItems = 'end';
