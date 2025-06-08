@@ -70,7 +70,7 @@ export class ShipConstructor {
       slidersSection.style.marginBottom = '1vh';
 
       const sliders: HTMLInputElement[] = [];
-      const valueLabels: HTMLSpanElement[] = [];
+      const bonusedLabels: HTMLSpanElement[] = [];
       let sliderRowCount = 0;
       let unfoldedSpecIdx: number | null = null;
       const specRows: HTMLDivElement[] = [];
@@ -148,26 +148,15 @@ export class ShipConstructor {
         row.appendChild(slider);
         sliders.push(slider);
 
-        const valueLabel = document.createElement('span');
-        valueLabel.textContent = Math.round(eq.Strength).toString();
-        valueLabel.style.width = '4vw';
-        valueLabel.style.fontSize = '2vh';
-        valueLabel.style.textAlign = 'right';
-        valueLabel.style.textShadow = '0 0 0.8vw #00fff7';
-        row.appendChild(valueLabel);
-        valueLabels.push(valueLabel);
-
-        // --- FIX: Add slider event handler for redistribution ---
-        slider.oninput = () => {
-          const newValue = Number(slider.value);
-          ship.SetEquipmentStrength(eq.Name, newValue);
-          // Update all sliders and value labels to reflect new strengths
-          ship.equipment.forEach((e, i) => {
-            sliders[i].value = e.Strength.toString();
-            valueLabels[i].textContent = Math.round(e.Strength).toString();
-          });
-        };
-        // --- END FIX ---
+        // Add bonused value label for all equipment
+        let bonusedLabel: HTMLSpanElement | null = null;
+        bonusedLabel = document.createElement('span');
+        bonusedLabel.style.marginLeft = '1vw';
+        bonusedLabel.style.fontSize = '2vh';
+        bonusedLabel.style.fontWeight = 'bold';
+        bonusedLabel.style.textShadow = '0 0 0.8vw #00fff7';
+        bonusedLabels.push(bonusedLabel);
+        row.appendChild(bonusedLabel);
 
         slidersSection.appendChild(row);
         sliderRowCount++;
@@ -188,68 +177,73 @@ export class ShipConstructor {
           specCascade.style.position = 'relative';
           specCascade.style.zIndex = '1';
           // Add sliders for each specification
-          (eq.Specification.Specifications() as string[]).forEach((specName: string, specIdx: number) => {
-            const specRow = document.createElement('div');
-            specRow.style.display = 'flex';
-            specRow.style.alignItems = 'center';
-            specRow.style.gap = '1vw';
-            specRow.style.width = '100%';
-            specRow.style.height = '2.2vh';
-            specRow.style.fontSize = '1.5vh';
+          if (specCascade) {
+            (eq.Specification.Specifications() as string[]).forEach((specName: string, specIdx: number) => {
+              const specRow = document.createElement('div');
+              specRow.style.display = 'flex';
+              specRow.style.alignItems = 'center';
+              specRow.style.gap = '1vw';
+              specRow.style.width = '100%';
+              specRow.style.height = '2.2vh';
+              specRow.style.fontSize = '1.5vh';
 
-            const specLabel = document.createElement('span');
-            specLabel.textContent = specName;
-            specLabel.style.flex = '0 0 7em';
-            specLabel.style.fontWeight = 'normal';
-            specLabel.style.textShadow = '0 0 0.5vw #00fff7';
-            specLabel.style.fontSize = '1.5vh';
-            specRow.appendChild(specLabel);
+              const specLabel = document.createElement('span');
+              specLabel.textContent = specName;
+              specLabel.style.flex = '0 0 7em';
+              specLabel.style.fontWeight = 'normal';
+              specLabel.style.textShadow = '0 0 0.5vw #00fff7';
+              specLabel.style.fontSize = '1.5vh';
+              specRow.appendChild(specLabel);
 
-            const specSlider = document.createElement('input');
-            specSlider.type = 'range';
-            specSlider.min = '0';
-            specSlider.max = (eq.Specification!.constructor as any).TotalSpecificationValue?.toString() || '100';
-            specSlider.value = eq.Specification!.SpecificationValues[specIdx].toString();
-            specSlider.step = '0.01';
-            specSlider.style.flex = '1';
-            specSlider.style.height = '1.1vh';
-            specSlider.style.accentColor = '#00fff7';
-            specSlider.style.background = 'rgba(0,255,255,0.1)';
-            specSlider.style.boxShadow = '0 0 0.5vw #00fff7';
-            specSlider.style.margin = '0 1vw';
-            specRow.appendChild(specSlider);
+              const specSlider = document.createElement('input');
+              specSlider.type = 'range';
+              specSlider.min = '0';
+              specSlider.max = (eq.Specification!.constructor as any).TotalSpecificationValue?.toString() || '100';
+              specSlider.value = eq.Specification!.SpecificationValues[specIdx].toString();
+              specSlider.step = '0.01';
+              specSlider.style.flex = '1';
+              specSlider.style.height = '1.1vh';
+              specSlider.style.accentColor = '#00fff7';
+              specSlider.style.background = 'rgba(0,255,255,0.1)';
+              specSlider.style.boxShadow = '0 0 0.5vw #00fff7';
+              specSlider.style.margin = '0 1vw';
+              specRow.appendChild(specSlider);
 
-            const specValueLabel = document.createElement('span');
-            specValueLabel.textContent = eq.Specification!.SpecificationValues[specIdx].toFixed(2);
-            specValueLabel.style.width = '3vw';
-            specValueLabel.style.fontSize = '1.5vh';
-            specValueLabel.style.textAlign = 'right';
-            specValueLabel.style.textShadow = '0 0 0.5vw #00fff7';
-            specRow.appendChild(specValueLabel);
+              const specValueLabel = document.createElement('span');
+              specValueLabel.textContent = eq.Specification!.SpecificationValues[specIdx].toFixed(2);
+              specValueLabel.style.width = '3vw';
+              specValueLabel.style.fontSize = '1.5vh';
+              specValueLabel.style.textAlign = 'right';
+              specValueLabel.style.textShadow = '0 0 0.5vw #00fff7';
+              specRow.appendChild(specValueLabel);
 
-            specSlider.oninput = () => {
-              eq.Specification!.SetSpecificationValue(specIdx, Number(specSlider.value));
-              // Update all spec sliders and value labels for this equipment
-              if (specCascade) {
+              specSlider.oninput = () => {
+                eq.Specification!.SetSpecificationValue(specIdx, Number(specSlider.value));
+                // Update all spec sliders and value labels for this equipment
                 (eq.Specification!.Specifications() as string[]).forEach((_: string, j: number) => {
                   const val = eq.Specification!.SpecificationValues[j];
-                  const child = specCascade.children[j];
-                  if (child) {
-                    const inputElem = child.querySelector('input') as HTMLInputElement | null;
-                    const spanElem = child.querySelector('span:last-child') as HTMLSpanElement | null;
-                    if (inputElem) inputElem.value = val.toString();
-                    if (spanElem) spanElem.textContent = Math.round(val).toString();
+                  if (specCascade) {
+                    const child = specCascade.children[j];
+                    if (child) {
+                      const inputElem = child.querySelector('input') as HTMLInputElement | null;
+                      const spanElem = child.querySelector('span:last-child') as HTMLSpanElement | null;
+                      if (inputElem) inputElem.value = val.toString();
+                      if (spanElem) spanElem.textContent = Math.round(val).toString();
+                    }
                   }
                 });
-              }
-            };
+                updateInfoBox();
+              };
 
-            if (specCascade) {
-              specCascade.appendChild(specRow);
-            }
-          });
-          specCascade.style.display = 'none'; // Hidden by default
-          specRows[eqIdx] = specCascade;
+              if (specCascade) {
+                specCascade.appendChild(specRow);
+              }
+            });
+            specCascade.style.display = 'none'; // Hidden by default
+            specRows[eqIdx] = specCascade;
+          } else {
+            specRows[eqIdx] = document.createElement('div');
+          }
         } else {
           specRows[eqIdx] = document.createElement('div');
         }
@@ -326,6 +320,9 @@ export class ShipConstructor {
         stcColonists = v;
         ship.Colonists = stcColonists;
       });
+      // Set step for troops and colonists sliders to 10
+      troopsSlider.slider.step = '10';
+      colonistsSlider.slider.step = '10';
 
       stcRow.appendChild(sizeSlider.group);
       stcRow.appendChild(troopsSlider.group);
@@ -486,6 +483,41 @@ export class ShipConstructor {
         ship.Colonists = stcColonists;
         updateAll();
       };
+
+      // Set up slider event handlers after all sliders and labels are created
+      sliders.forEach((slider, idx) => {
+        slider.oninput = () => {
+          const newValue = Number(slider.value);
+          // Set the strength for the tech associated with this slider
+          ship.SetEquipmentStrength(ship.equipment[idx].Name, newValue);
+          // Update all sliders and bonused labels to reflect redistributed strengths
+          ship.equipment.forEach((eq, i) => {
+            sliders[i].value = eq.Strength.toString();
+            const bonused = eq.TotalStrength();
+            const base = eq.Strength;
+            bonusedLabels[i].textContent = Math.round(bonused).toString();
+            if (Math.abs(bonused - base) > 0.01) {
+              bonusedLabels[i].style.color = '#0f0';
+            } else {
+              bonusedLabels[i].style.color = '#fff';
+            }
+          });
+          updateInfoBox();
+        };
+      });
+
+      // Initialize bonused labels at dialog start
+      ship.equipment.forEach((eq, i) => {
+        sliders[i].value = eq.Strength.toString();
+        const bonused = eq.TotalStrength();
+        const base = eq.Strength;
+        bonusedLabels[i].textContent = Math.round(bonused).toString();
+        if (Math.abs(bonused - base) > 0.01) {
+          bonusedLabels[i].style.color = '#0f0';
+        } else {
+          bonusedLabels[i].style.color = '#fff';
+        }
+      });
     });
   }
 } 
